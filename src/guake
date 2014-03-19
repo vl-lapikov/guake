@@ -35,6 +35,7 @@ import re
 import signal
 import subprocess
 import sys
+import yaml
 import vte
 import xdg.Exceptions
 
@@ -438,6 +439,12 @@ class GConfKeyHandler(object):
         if key > 0:
             self.accel_group.connect_group(key, mask, gtk.ACCEL_VISIBLE,
                                            self.guake.accel_add)
+
+        key, mask = gtk.accelerator_parse(gets('default_tabs'))
+        if key > 0:
+            self.accel_group.connect_group(key, mask, gtk.ACCEL_VISIBLE,
+                                           self.guake.accel_default)
+
 
         key, mask = gtk.accelerator_parse(gets('close_tab'))
         if key > 0:
@@ -1205,6 +1212,14 @@ class Guake(SimpleGladeApp):
         self.add_tab()
         return True
 
+    def accel_default(self, *args):
+	""" Callback to open number of default tabs
+	"""
+        stream = open(os.path.expanduser('~') + "/.guake/default_tabs.yaml", 'r')
+        for tab, commands in yaml.load(stream).iteritems():
+		self.add_tab(None, tab, '\n'.join(commands) + '\n')
+	return True
+
     def accel_prev(self, *args):
         """Callback to go to the previous tab. Called by the accel key.
         """
@@ -1521,7 +1536,7 @@ class Guake(SimpleGladeApp):
                 os.environ['https_proxy'] = 'http://%s:%d' % (
                     ssl_host, ssl_port)
 
-    def add_tab(self, directory=None):
+    def add_tab(self, directory=None, tab_title='Terminal', default_command=None):
         """Adds a new tab to the terminal notebook.
         """
         box = GuakeTerminalBox()
@@ -1559,11 +1574,14 @@ class Guake(SimpleGladeApp):
 
         final_params = self.get_fork_params(default_params)
         pid = box.terminal.fork_command(**final_params)
+        # run default command in opened tab
+        if default_command is not None:
+            box.terminal.fork_command('bash')
+            box.terminal.feed_child(default_command)
         box.terminal.pid = pid
         self.pid_list.append(pid)
-
         # Adding a new radio button to the tabbar
-        label = box.terminal.get_window_title() or _("Terminal")
+        label = box.terminal.get_window_title() or _(tab_title)
         tabs = self.tabs.get_children()
         parent = tabs and tabs[0] or None
 
