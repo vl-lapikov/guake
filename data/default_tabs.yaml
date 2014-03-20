@@ -1,0 +1,4 @@
+etc:
+        - cd /etc/
+hosts:
+        - cat /etc/hosts
