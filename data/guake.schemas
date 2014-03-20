@@ -758,5 +758,16 @@
             </locale>
         </schema>
 
+        <schema>
+            <key>/schemas/apps/guake/keybindings/local/default_tabs</key>
+            <applyto>/apps/guake/keybindings/local/default_tabs</applyto>
+            <owner>guake</owner>
+            <type>string</type>
+            <default>&lt;Control&gt;&lt;Shift&gt;k</default>
+            <locale name="C">
+                <short>Add default tabs</short>
+                <long>Calls the function to add number of default tabs in guake window.</long>
+            </locale>
+        </schema>
     </schemalist>
 </gconfschemafile>
